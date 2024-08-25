@@ -25,7 +25,7 @@ export async function createSumObject(collection, object) {
     number1: object.number1,
     number2: object.number2,
     result: null,
-    status: "pending",
+    calculationStatus: "pending",
   };
   return await collection.insertOne(sumObject).then(
     (response) => {

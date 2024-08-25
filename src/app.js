@@ -1,4 +1,5 @@
 import express from 'express';
+import amqp from 'amqplib/callback_api.js'
 import { calcAsync, getResults } from './sumRequest.js';
 
 const app = express();
@@ -17,13 +18,17 @@ app.use(function(req, res, next) {
   next();
 });
 
-// app.get("/status", (request, response) => {
-//   const status = {
-//     Status: "Runnning",
-//   };
-
-//   response.send(status);
-// });
+function sendToWorker(data) {
+  amqp.connect('amqp://localhost:5672', function (err, conn) {
+    conn.createChannel(function (err, ch) {
+        let q = 'Sum App';
+        ch.assertQueue(q, { durable: false });     
+        ch.sendToQueue(q, new Buffer(data));
+        console.log(" [x] Sent %s", data);
+    });
+    setTimeout(function () { conn.close(); }, 500);
+  });
+}
 
 app.get("/GetResults/:id", async (req, res) => {
   const sumObject = await getResults(req.params.id);
@@ -32,6 +37,9 @@ app.get("/GetResults/:id", async (req, res) => {
 
 app.post("/CalcAsync", async (req, res) => {
   const sumObject = req.body;
-  const result = await calcAsync(sumObject)
+  const result = await calcAsync(sumObject);
+  const workerMsg = JSON.stringify({ ...sumObject, id: result.insertedId});
+  console.log(workerMsg)
+  sendToWorker(workerMsg);
   res.send({ insertedId: result.insertedId });
 });

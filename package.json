@@ -4,6 +4,7 @@
   "main": "index.js",
   "scripts": {
     "start": "node src/app.js",
+    "worker": "node worker/worker.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
@@ -11,6 +12,7 @@
   "license": "ISC",
   "description": "",
   "dependencies": {
+    "amqplib": "^0.10.4",
     "dotenv": "^16.4.5",
     "express": "^4.19.2",
     "jitterbit-test-backend": "file:",
