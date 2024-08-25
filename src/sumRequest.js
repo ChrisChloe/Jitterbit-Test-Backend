@@ -1,16 +1,8 @@
-import { MongoClient } from "mongodb";
+import { MongoClient, ObjectId } from "mongodb";
 import { config } from "dotenv";
 
 config();
 console.log(process.env.DB_URI);
-
-// const client = new MongoClient(uri, {
-//   serverApi: {
-//     version: ServerApiVersion.v1,
-//     strict: true,
-//     deprecationErrors: true,
-//   },
-// });
 
 export async function connectToCluster(uri) {
   let mongoClient;
@@ -30,17 +22,23 @@ export async function connectToCluster(uri) {
 
 export async function createSumObject(collection, object) {
   const sumObject = {
-    number1: 5,
-    number2: 10,
+    number1: object.number1,
+    number2: object.number2,
     result: null,
     status: "pending",
   };
-
-  await collection.insertOne(sumObject);
+  return await collection.insertOne(sumObject).then(
+    (response) => {
+      return response;
+    },
+    (error) => {
+      console.error(error);
+    }
+  );
 }
 
 export async function findSumById(collection, id) {
-  return collection.find({ id }).toArray();
+  return await collection.findOne({ _id: new ObjectId(id) });
 }
 
 export async function updateSumObject(collection, name, updatedFields) {
@@ -55,9 +53,7 @@ export async function calcAsync(sumObject) {
     mongoClient = await connectToCluster(uri);
     const db = mongoClient.db("operations");
     const collection = db.collection("sum");
-    
     return await createSumObject(collection, sumObject);
-    // await updateStudentsByName(collection, 'John Smith', { birthdate: new Date(2001, 5, 5) });
   } catch {
     console.error("calcAsync error");
   } finally {
@@ -74,7 +70,11 @@ export async function getResults(id) {
     const db = mongoClient.db("operations");
     const collection = db.collection("sum");
 
-    return await findSumById(collection);
+    return await findSumById(collection, id).then(response => {
+      return response
+    }, err => {
+      console.log(err)
+    });
   } catch {
     console.error("getResults error");
   } finally {

@@ -9,6 +9,13 @@ app.listen(PORT, () => {
 });
 
 app.use(express.json());
+app.use(function(req, res, next) {
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+  res.setHeader('Access-Control-Allow-Credentials', true);
+  next();
+});
 
 // app.get("/status", (request, response) => {
 //   const status = {
@@ -18,13 +25,13 @@ app.use(express.json());
 //   response.send(status);
 // });
 
-app.get("/GetResults", async (req, res) => {
-  const sumObject = await getResults('find');
+app.get("/GetResults/:id", async (req, res) => {
+  const sumObject = await getResults(req.params.id);
   res.send(sumObject);
 });
 
 app.post("/CalcAsync", async (req, res) => {
   const sumObject = req.body;
-  await calcAsync(sumObject)
-  res.send({ message: 'Numbers sent for sum'});
+  const result = await calcAsync(sumObject)
+  res.send({ insertedId: result.insertedId });
 });
